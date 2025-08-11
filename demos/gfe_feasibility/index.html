@@ -1,7 +1,1459 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Goode Faith Engineering - Property Analysis Platform</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: #1a1a1a;
+            color: #ffffff;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            padding-top: 70px; /* Space for fixed header */
+        }
+
+        /* Fixed Header */
+        .app-header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            background: linear-gradient(135deg, #5c2e2e 0%, #3d1f1f 100%);
+            border-bottom: 2px solid #8b3a3a;
+            padding: 12px 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.5);
+            z-index: 1000;
+            height: 70px;
+        }
+
+        .logo-section {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .logo-img {
+            height: 45px;
+            width: auto;
+        }
+
+        .platform-label {
+            color: rgba(255,255,255,0.9);
+            font-size: 0.95em;
+            font-weight: 300;
+            letter-spacing: 1px;
+            display: none;
+        }
+
+        .header-nav {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+        }
+
+        .nav-indicator {
+            display: flex;
+            gap: 6px;
+        }
+
+        .nav-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.3);
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .nav-dot.active {
+            background: #ffffff;
+            width: 24px;
+            border-radius: 4px;
+        }
+
+        /* Main Container */
+        .main-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            background: #1e1e1e;
+        }
+
+        /* Content Area */
+        .content-area {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            max-width: 1400px;
+            margin: 0 auto;
+            width: 100%;
+        }
+
+        .screen {
+            display: none;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .screen.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        /* Form Styles */
+        .form-container {
+            background: #2a2a2a;
+            border: 1px solid #3a3a3a;
+            border-radius: 8px;
+            padding: 30px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+        }
+
+        .form-title {
+            font-size: 1.6em;
+            color: #ffffff;
+            margin-bottom: 10px;
+            font-weight: 400;
+        }
+
+        .form-subtitle {
+            color: #9ca3af;
+            margin-bottom: 25px;
+            font-size: 0.95em;
+        }
+
+        /* Input Method Toggle */
+        .input-method-toggle {
+            background: #1e1e1e;
+            border: 1px solid #3a3a3a;
+            border-radius: 6px;
+            padding: 15px;
+            margin-bottom: 25px;
+        }
+
+        .toggle-label {
+            color: #9ca3af;
+            font-size: 0.9em;
+            margin-bottom: 10px;
+            display: block;
+        }
+
+        .toggle-buttons {
+            display: flex;
+            gap: 10px;
+        }
+
+        .toggle-btn {
+            flex: 1;
+            padding: 10px;
+            background: #2a2a2a;
+            border: 1px solid #3a3a3a;
+            border-radius: 4px;
+            color: #9ca3af;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-size: 0.9em;
+        }
+
+        .toggle-btn.active {
+            background: #8b3a3a;
+            color: white;
+            border-color: #8b3a3a;
+        }
+
+        .toggle-btn:hover:not(.active) {
+            border-color: #8b3a3a;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group.disabled {
+            opacity: 0.4;
+            pointer-events: none;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 8px;
+            color: #9ca3af;
+            font-size: 0.9em;
+            font-weight: 500;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 10px 12px;
+            background: #1e1e1e;
+            border: 1px solid #3a3a3a;
+            border-radius: 4px;
+            color: #ffffff;
+            font-size: 0.95em;
+            transition: all 0.2s ease;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: #8b3a3a;
+            background: #242424;
+        }
+
+        .input-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border-radius: 4px;
+            font-size: 0.95em;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border: none;
+            white-space: nowrap;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #8b3a3a 0%, #5c2e2e 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: linear-gradient(135deg, #a04444 0%, #6b3636 100%);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(139, 58, 58, 0.3);
+        }
+
+        .btn-secondary {
+            background: transparent;
+            color: #9ca3af;
+            border: 1px solid #3a3a3a;
+        }
+
+        .btn-secondary:hover {
+            border-color: #8b3a3a;
+            color: #8b3a3a;
+        }
+
+        /* Task Grid */
+        .task-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .task-card {
+            background: #2a2a2a;
+            border: 1px solid #3a3a3a;
+            border-radius: 6px;
+            padding: 15px;
+            transition: all 0.2s ease;
+        }
+
+        .task-card.running {
+            border-color: #8b3a3a;
+            box-shadow: 0 0 10px rgba(139, 58, 58, 0.2);
+        }
+
+        .task-card.completed {
+            border-color: #10B981;
+            background: rgba(16, 185, 129, 0.05);
+        }
+
+        .task-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .task-name {
+            color: #ffffff;
+            font-size: 0.9em;
+            font-weight: 500;
+        }
+
+        .task-status {
+            width: 20px;
+            height: 20px;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.7em;
+        }
+
+        .status-pending {
+            background: #4a4a4a;
+        }
+
+        .status-running {
+            background: #8b3a3a;
+            animation: pulse 1.5s infinite;
+        }
+
+        .status-completed {
+            background: #10B981;
+            color: white;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.6; }
+        }
+
+        .progress-bar {
+            height: 4px;
+            background: #1e1e1e;
+            border-radius: 2px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #8b3a3a, #a04444);
+            transition: width 0.3s ease;
+        }
+
+        /* Map Widget with Satellite */
+        .map-widget {
+            background: #2a2a2a;
+            border: 1px solid #3a3a3a;
+            border-radius: 6px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+        }
+
+        .map-title {
+            color: #ffffff;
+            font-size: 1.2em;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .map-view {
+            width: 100%;
+            height: 400px;
+            background-image: url('https://storage.googleapis.com/p-ssp-iep-prod-8ff-strapi-uploads/ID_6_Banner_San_Diego_PHR_1_B_20150724_47f7833729/ID_6_Banner_San_Diego_PHR_1_B_20150724_47f7833729.jpg');
+            background-size: cover;
+            background-position: center;
+            border: 1px solid #3a3a3a;
+            border-radius: 4px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .map-parcel {
+            position: absolute;
+            top: 45%;
+            left: 48%;
+            transform: translate(-50%, -50%);
+            width: 160px;
+            height: 120px;
+            background: rgba(255, 0, 0, 0.15);
+            border: 3px solid #ff0000;
+            clip-path: polygon(15% 0%, 100% 0%, 95% 100%, 0% 100%);
+            animation: parcelPulse 3s ease infinite;
+        }
+
+        @keyframes parcelPulse {
+            0%, 100% { 
+                background: rgba(255, 0, 0, 0.15);
+                border-color: #ff0000;
+            }
+            50% { 
+                background: rgba(255, 0, 0, 0.25);
+                border-color: #ff3333;
+            }
+        }
+
+        .map-road {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 60px;
+            background: rgba(50, 50, 50, 0.8);
+            border-top: 3px dashed #fbbf24;
+        }
+
+        .road-label {
+            position: absolute;
+            bottom: 70px;
+            right: 20px;
+            background: rgba(42, 42, 42, 0.95);
+            padding: 8px 12px;
+            border-radius: 4px;
+            font-size: 0.85em;
+            border: 1px solid #3a3a3a;
+            color: #ffffff;
+        }
+
+        /* Detail Panel */
+        .detail-panel {
+            background: #2a2a2a;
+            border: 1px solid #3a3a3a;
+            border-radius: 6px;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+        }
+
+        .detail-text {
+            color: #d1d5db;
+            line-height: 1.7;
+            margin-bottom: 15px;
+            font-size: 0.95em;
+        }
+
+        .detail-text strong {
+            color: #ffffff;
+        }
+
+        .detail-link {
+            color: #8b3a3a;
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        .detail-link:hover {
+            color: #a04444;
+            text-decoration: underline;
+        }
+
+        /* Summary Cards */
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .summary-card {
+            background: #2a2a2a;
+            border: 1px solid #3a3a3a;
+            border-radius: 6px;
+            padding: 20px;
+            transition: all 0.2s ease;
+        }
+
+        .summary-card:hover {
+            border-color: #8b3a3a;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        }
+
+        .card-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .card-icon {
+            width: 32px;
+            height: 32px;
+            background: linear-gradient(135deg, #8b3a3a 0%, #5c2e2e 100%);
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2em;
+        }
+
+        .card-title {
+            color: #ffffff;
+            font-size: 1em;
+            font-weight: 500;
+        }
+
+        .card-content {
+            color: #9ca3af;
+            font-size: 0.85em;
+            line-height: 1.6;
+        }
+
+        .highlight {
+            color: #ff6b6b;
+            font-weight: 600;
+        }
+
+        /* Table with Better Contrast */
+        .table-container {
+            background: #2a2a2a;
+            border: 1px solid #3a3a3a;
+            border-radius: 6px;
+            overflow: hidden;
+            margin-top: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+        }
+
+        .table-header {
+            padding: 20px;
+            border-bottom: 1px solid #3a3a3a;
+            background: linear-gradient(135deg, rgba(139, 58, 58, 0.1) 0%, rgba(92, 46, 46, 0.1) 100%);
+        }
+
+        .table-title {
+            color: #ffffff;
+            font-size: 1.2em;
+            margin-bottom: 5px;
+        }
+
+        .table-wrapper {
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 500px;
+        }
+
+        thead {
+            background: #242424;
+        }
+
+        th {
+            padding: 12px 15px;
+            text-align: left;
+            color: #ffffff;
+            font-weight: 600;
+            font-size: 0.9em;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            border-bottom: 2px solid #3a3a3a;
+        }
+
+        td {
+            padding: 12px 15px;
+            color: #d1d5db;
+            font-size: 0.9em;
+            border-bottom: 1px solid #333;
+        }
+
+        tbody tr:hover {
+            background: #333;
+        }
+
+        .fee-amount {
+            color: #ff6b6b;
+            font-weight: 600;
+            font-size: 1em;
+        }
+
+        .btn-explain {
+            padding: 5px 12px;
+            background: transparent;
+            border: 1px solid #ff6b6b;
+            color: #ff6b6b;
+            border-radius: 4px;
+            font-size: 0.8em;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .btn-explain:hover {
+            background: #8b3a3a;
+            color: white;
+            border-color: #8b3a3a;
+        }
+
+        .table-footer {
+            background: #1e1e1e;
+            padding: 18px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-top: 2px solid #8b3a3a;
+        }
+
+        .total-label {
+            color: #ffffff;
+            font-weight: 500;
+        }
+
+        .total-amount {
+            color: #ff6b6b;
+            font-size: 1.4em;
+            font-weight: 600;
+        }
+
+        /* Email Container */
+        .email-container {
+            background: #2a2a2a;
+            border: 1px solid #3a3a3a;
+            border-radius: 6px;
+            overflow: hidden;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+        }
+
+        .email-header {
+            padding: 20px;
+            border-bottom: 1px solid #3a3a3a;
+            background: linear-gradient(135deg, rgba(139, 58, 58, 0.1) 0%, rgba(92, 46, 46, 0.1) 100%);
+        }
+
+        .email-field {
+            padding: 15px 20px;
+            border-bottom: 1px solid #3a3a3a;
+        }
+
+        .email-label {
+            color: #9ca3af;
+            font-size: 0.85em;
+            margin-bottom: 8px;
+            font-weight: 500;
+        }
+
+        .email-input {
+            width: 100%;
+            padding: 10px 12px;
+            background: #1e1e1e;
+            border: 1px solid #3a3a3a;
+            border-radius: 4px;
+            color: #ffffff;
+            font-size: 0.9em;
+        }
+
+        .email-body {
+            width: 100%;
+            min-height: 350px;
+            padding: 12px;
+            background: #1e1e1e;
+            border: 1px solid #3a3a3a;
+            border-radius: 4px;
+            color: #ffffff;
+            font-family: inherit;
+            font-size: 0.9em;
+            line-height: 1.6;
+            resize: vertical;
+        }
+
+        .email-actions {
+            padding: 15px 20px;
+            background: #242424;
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+            flex-wrap: wrap;
+        }
+
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.8);
+            z-index: 2000;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: #2a2a2a;
+            border: 1px solid #3a3a3a;
+            padding: 25px;
+            border-radius: 6px;
+            max-width: 500px;
+            width: 100%;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+        }
+
+        .modal-title {
+            color: #ffffff;
+            font-size: 1.1em;
+            margin-bottom: 15px;
+        }
+
+        .modal-text {
+            color: #9ca3af;
+            line-height: 1.6;
+            margin-bottom: 20px;
+            font-size: 0.9em;
+        }
+
+        .modal-link {
+            color: #8b3a3a;
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        /* Navigation */
+        .bottom-nav {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            display: flex;
+            gap: 10px;
+            z-index: 100;
+        }
+
+        .nav-btn {
+            padding: 10px 18px;
+            background: linear-gradient(135deg, #8b3a3a 0%, #5c2e2e 100%);
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.9em;
+            font-weight: 500;
+            transition: all 0.2s ease;
+        }
+
+        .nav-btn:hover {
+            background: linear-gradient(135deg, #a04444 0%, #6b3636 100%);
+            transform: translateY(-1px);
+        }
+
+        .nav-btn:disabled {
+            background: #3a3a3a;
+            color: #6b7280;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        /* Status Badge */
+        .status-badge {
+            display: inline-block;
+            padding: 6px 14px;
+            border-radius: 4px;
+            font-size: 0.9em;
+            font-weight: 500;
+        }
+
+        .badge-success {
+            background: rgba(16, 185, 129, 0.2);
+            color: #10B981;
+            border: 1px solid #10B981;
+        }
+
+        /* Summary header */
+        .summary-header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding: 20px;
+            background: linear-gradient(135deg, rgba(139, 58, 58, 0.1) 0%, rgba(92, 46, 46, 0.1) 100%);
+            border-radius: 6px;
+        }
+
+        .property-address {
+            color: #9ca3af;
+            font-size: 0.95em;
+            margin-bottom: 10px;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .platform-label {
+                display: block;
+            }
+
+            .logo-img {
+                height: 35px;
+            }
+
+            .content-area {
+                padding: 15px;
+            }
+
+            .form-container {
+                padding: 20px;
+            }
+
+            .form-title {
+                font-size: 1.3em;
+            }
+
+            .summary-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .task-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .app-header {
+                padding: 10px 15px;
+                height: 60px;
+            }
+
+            body {
+                padding-top: 60px;
+            }
+
+            .logo-img {
+                height: 30px;
+            }
+
+            .platform-label {
+                font-size: 0.8em;
+            }
+
+            .form-container {
+                padding: 15px;
+            }
+
+            .input-row {
+                grid-template-columns: 1fr;
+            }
+
+            .bottom-nav {
+                right: 10px;
+                bottom: 10px;
+            }
+
+            .nav-btn {
+                padding: 8px 12px;
+                font-size: 0.85em;
+            }
+
+            th {
+                padding: 10px;
+                font-size: 0.8em;
+            }
+
+            td {
+                padding: 10px;
+                font-size: 0.85em;
+            }
+
+            .btn-explain {
+                padding: 4px 8px;
+                font-size: 0.75em;
+            }
+        }
+
+        @media (max-width: 320px) {
+            .logo-section {
+                gap: 10px;
+            }
+
+            .platform-label {
+                display: none;
+            }
+
+            .form-title {
+                font-size: 1.1em;
+            }
+
+            .map-view {
+                height: 250px;
+            }
+
+            .table-wrapper {
+                font-size: 0.85em;
+            }
+
+            .email-actions {
+                flex-direction: column;
+            }
+
+            .email-actions .btn {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
 <body>
-<h1>Hello Goode Faith!</h1>
-<p>I'm hosted with GitHub Pages.</p>
+    <!-- Fixed Header with Goode Faith Branding -->
+    <div class="app-header">
+        <div class="logo-section">
+            <img src="https://goodefaith.com/wp-content/uploads/2022/07/GF-Header-White.png" alt="Goode Faith Engineering" class="logo-img">
+            <span class="platform-label">Property Analysis Platform</span>
+        </div>
+        <div class="header-nav">
+            <div class="nav-indicator">
+                <div class="nav-dot active" data-screen="1"></div>
+                <div class="nav-dot" data-screen="2"></div>
+                <div class="nav-dot" data-screen="3"></div>
+                <div class="nav-dot" data-screen="4"></div>
+                <div class="nav-dot" data-screen="5"></div>
+                <div class="nav-dot" data-screen="6"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Container -->
+    <div class="main-container">
+        <!-- Content Area -->
+        <div class="content-area">
+            <!-- Screen 1: Input Form with Toggle -->
+            <div class="screen active" id="screen1">
+                <div class="form-container">
+                    <h1 class="form-title">New Property Analysis</h1>
+                    <p class="form-subtitle">Enter property details to begin comprehensive due diligence analysis</p>
+                    
+                    <div class="input-method-toggle">
+                        <label class="toggle-label">Select Input Method:</label>
+                        <div class="toggle-buttons">
+                            <button class="toggle-btn active" onclick="toggleInputMethod('address')">Property Address</button>
+                            <button class="toggle-btn" onclick="toggleInputMethod('coordinates')">GPS Coordinates</button>
+                        </div>
+                    </div>
+
+                    <div class="form-group" id="addressGroup">
+                        <label class="form-label">Property Address *</label>
+                        <input type="text" class="form-input" id="addressInput" placeholder="Enter full property address" value="12345 Highway 183, Cedar Park, TX 78613">
+                    </div>
+
+                    <div class="form-group disabled" id="coordinatesGroup">
+                        <label class="form-label">GPS Coordinates *</label>
+                        <div class="input-row">
+                            <input type="text" class="form-input" id="latInput" placeholder="Latitude (e.g., 30.5134)">
+                            <input type="text" class="form-input" id="lngInput" placeholder="Longitude (e.g., -97.8269)">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Client Information</label>
+                        <div class="input-row">
+                            <input type="text" class="form-input" placeholder="Client name" value="Sarah Johnson">
+                            <input type="email" class="form-input" placeholder="Client email" value="sarah.johnson@example.com">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Project Type</label>
+                        <select class="form-input">
+                            <option selected>Commercial Development</option>
+                            <option>Residential Subdivision</option>
+                            <option>Mixed Use Development</option>
+                            <option>Industrial</option>
+                        </select>
+                    </div>
+
+                    <div style="margin-top: 30px;">
+                        <button class="btn btn-primary" onclick="nextScreen()">Begin Analysis →</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Screen 2: Task Progress -->
+            <div class="screen" id="screen2">
+                <div class="form-container">
+                    <h1 class="form-title">Analysis in Progress</h1>
+                    <p class="form-subtitle">Running comprehensive property analysis across all categories...</p>
+                    
+                    <div class="task-grid" id="taskGrid">
+                        <!-- Tasks populated by JavaScript -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Screen 3: Detail View with Satellite -->
+            <div class="screen" id="screen3">
+                <div class="map-widget">
+                    <h2 class="map-title">
+                        <span style="font-size: 1.2em;">📍</span>
+                        Transportation & Road Analysis
+                    </h2>
+                    
+                    <div class="map-view">
+                        <div class="map-parcel"></div>
+                        <div class="map-road"></div>
+                        <div class="road-label">FM 620 (TxDOT)</div>
+                    </div>
+                </div>
+
+                <div class="detail-panel">
+                    <p class="detail-text">
+                        <strong>Key Finding:</strong> This parcel is adjacent to FM 620, which is owned and maintained by the Texas Department of Transportation (TxDOT).
+                    </p>
+                    <p class="detail-text">
+                        <strong>Active TxDOT Projects:</strong> 1 project identified within 0.5 miles
+                    </p>
+                    <p class="detail-text">
+                        <strong>Project Details:</strong><br>
+                        • Project #0120-05-028: FM 620 Improvements<br>
+                        • Timeline: March 2025 - Q2 2027<br>
+                        • Impact: Will affect access points and driveway permits<br>
+                        <a href="https://lagovistatexas.gov/DocumentCenter/View/1049/FY-2020-2021-CIP-Plan-PDF" target="_blank" class="detail-link">View Full TxDOT Project Documentation →</a>
+                    </p>
+                    <p class="detail-text">
+                        <strong>Engineering Impact:</strong> Coordination with TxDOT required for all access permits. Design must comply with TxDOT standards for driveway spacing and turn lane requirements.
+                    </p>
+                </div>
+            </div>
+
+            <!-- Screen 4: Summary with Better Contrast -->
+            <div class="screen" id="screen4">
+                <div class="form-container" style="max-width: 1200px;">
+                    <div class="summary-header">
+                        <p class="property-address">12345 Highway 183, Cedar Park, TX 78613</p>
+                        <h1 class="form-title" style="margin-bottom: 15px;">Property Analysis Complete</h1>
+                        <span class="status-badge badge-success">✓ Low Risk • Score: 82/100</span>
+                    </div>
+
+                    <div class="summary-grid">
+                        <div class="summary-card">
+                            <div class="card-header">
+                                <div class="card-icon">🗺️</div>
+                                <div class="card-title">Boundaries & Jurisdictions</div>
+                            </div>
+                            <div class="card-content">
+                                County: <span class="highlight">Travis County</span><br>
+                                City: <span class="highlight">Cedar Park</span> (within limits)<br>
+                                Zoning: <span class="highlight">C-2 Commercial</span><br>
+                                ETJ Status: Not applicable
+                            </div>
+                        </div>
+
+                        <div class="summary-card">
+                            <div class="card-header">
+                                <div class="card-icon">🏔️</div>
+                                <div class="card-title">Physical Features</div>
+                            </div>
+                            <div class="card-content">
+                                Area: <span class="highlight">5.2 acres</span> (226,512 sq ft)<br>
+                                Perimeter: 892 feet<br>
+                                Elevation: 782ft avg, 3.2% max slope<br>
+                                Flood Zone: <span class="highlight">Zone X</span> (minimal risk)<br>
+                                Trees: 12 hardwood (mitigation required)
+                            </div>
+                        </div>
+
+                        <div class="summary-card">
+                            <div class="card-header">
+                                <div class="card-icon">🚗</div>
+                                <div class="card-title">Transportation Access</div>
+                            </div>
+                            <div class="card-content">
+                                Frontage: <span class="highlight">312 feet on Hwy 183</span><br>
+                                Road Owner: TxDOT<br>
+                                Nearest Driveways: 185ft / 142ft<br>
+                                Active Projects: <span class="highlight">1 TxDOT project</span><br>
+                                Turn Lane: Not existing
+                            </div>
+                        </div>
+
+                        <div class="summary-card">
+                            <div class="card-header">
+                                <div class="card-icon">⚡</div>
+                                <div class="card-title">Utilities Status</div>
+                            </div>
+                            <div class="card-content">
+                                Water: <span class="highlight">12" main available</span><br>
+                                Wastewater: <span class="highlight">8" main at site</span><br>
+                                Electric: <span class="highlight">3-phase available</span><br>
+                                Fire Hydrants: 235ft, 412ft<br>
+                                Easements: 20ft drainage (east)
+                            </div>
+                        </div>
+
+                        <div class="summary-card">
+                            <div class="card-header">
+                                <div class="card-icon">💧</div>
+                                <div class="card-title">Hydrology & Environment</div>
+                            </div>
+                            <div class="card-content">
+                                Creek/Waterway: None on property<br>
+                                FEMA Floodplain: <span class="highlight">Outside 100-year</span><br>
+                                TCEQ Zone: Not in contributing zone<br>
+                                Edwards Aquifer: Not applicable<br>
+                                Critical Habitat: None identified
+                            </div>
+                        </div>
+
+                        <div class="summary-card">
+                            <div class="card-header">
+                                <div class="card-icon">📄</div>
+                                <div class="card-title">Legal & Records</div>
+                            </div>
+                            <div class="card-content">
+                                Platted: <span class="highlight">Yes</span> (Plat #2021-045)<br>
+                                Deed History: Clear since 1987<br>
+                                Restrictions: Standard commercial<br>
+                                Title Issues: None identified<br>
+                                Survey: Recent (2023)
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Screen 5: Fee Table with Better Contrast -->
+            <div class="screen" id="screen5">
+                <div class="table-container">
+                    <div class="table-header">
+                        <h2 class="table-title">Engineering Services Fee Estimate</h2>
+                    </div>
+                    
+                    <div class="table-wrapper">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Service Description</th>
+                                    <th>Hours</th>
+                                    <th>Fee</th>
+                                    <th>Details</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>Site Planning & Zoning</td>
+                                    <td>120</td>
+                                    <td class="fee-amount">$18,000</td>
+                                    <td><button class="btn-explain" onclick="showExplanation('zoning')">View Basis</button></td>
+                                </tr>
+                                <tr>
+                                    <td>Civil Engineering Design</td>
+                                    <td>240</td>
+                                    <td class="fee-amount">$36,000</td>
+                                    <td><button class="btn-explain" onclick="showExplanation('civil')">View Basis</button></td>
+                                </tr>
+                                <tr>
+                                    <td>TxDOT Coordination</td>
+                                    <td>80</td>
+                                    <td class="fee-amount">$12,000</td>
+                                    <td><button class="btn-explain" onclick="showExplanation('txdot')">View Basis</button></td>
+                                </tr>
+                                <tr>
+                                    <td>Drainage & Detention</td>
+                                    <td>160</td>
+                                    <td class="fee-amount">$24,000</td>
+                                    <td><button class="btn-explain" onclick="showExplanation('drainage')">View Basis</button></td>
+                                </tr>
+                                <tr>
+                                    <td>Tree Mitigation Plan</td>
+                                    <td>40</td>
+                                    <td class="fee-amount">$6,000</td>
+                                    <td><button class="btn-explain" onclick="showExplanation('trees')">View Basis</button></td>
+                                </tr>
+                                <tr>
+                                    <td>Utility Coordination</td>
+                                    <td>60</td>
+                                    <td class="fee-amount">$9,000</td>
+                                    <td><button class="btn-explain" onclick="showExplanation('utilities')">View Basis</button></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <div class="table-footer">
+                        <span class="total-label">Total Professional Services (700 hours)</span>
+                        <span class="total-amount">$105,000</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Screen 6: Email -->
+            <div class="screen" id="screen6">
+                <div class="email-container">
+                    <div class="email-header">
+                        <h2 class="table-title">Send Analysis Report to Client</h2>
+                    </div>
+
+                    <div class="email-field">
+                        <div class="email-label">TO:</div>
+                        <input type="email" class="email-input" value="sarah.johnson@example.com">
+                    </div>
+
+                    <div class="email-field">
+                        <div class="email-label">SUBJECT:</div>
+                        <input type="text" class="email-input" value="Property Analysis Complete - 12345 Highway 183, Cedar Park">
+                    </div>
+
+                    <div class="email-field">
+                        <div class="email-label">MESSAGE:</div>
+                        <textarea class="email-body">Dear Sarah,
+
+Thank you for choosing Goode Faith Engineering for your property development needs. We've completed our comprehensive analysis of your property at 12345 Highway 183, Cedar Park, TX.
+
+EXECUTIVE SUMMARY:
+Your 5.2-acre property presents an excellent opportunity for commercial development with favorable conditions across all major categories. The site benefits from existing C-2 commercial zoning and immediate access to major utilities.
+
+KEY FINDINGS:
+• Property is appropriately zoned for commercial development (C-2)
+• All major utilities (water, wastewater, electric) are available at the site
+• 312 feet of frontage on Highway 183 provides excellent visibility and access
+• Site topography is favorable with manageable 3.2% maximum slope
+• Property is outside the 100-year floodplain (Zone X)
+• No environmental red flags or critical habitat concerns
+
+COMPARABLE PROJECTS:
+This opportunity aligns with several successful projects we've completed:
+• Target Development at 1101 C-Bar Ranch Trail - Similar 5.8-acre commercial site
+• Cedar Park Commerce Center - Comparable TxDOT coordination requirements
+• Williamson County Retail Complex - Similar utility infrastructure and tree mitigation
+
+PRELIMINARY FEE ESTIMATE: $105,000
+This comprehensive fee includes all engineering services from conceptual planning through construction administration, including specialized TxDOT coordination required for your Highway 183 frontage.
+
+IMMEDIATE NEXT STEPS:
+1. Schedule a detailed review meeting (I have availability Tuesday-Thursday this week)
+2. Refine project scope based on your specific development program
+3. Prepare formal proposal with detailed deliverables and timeline
+4. Initiate preliminary design and TxDOT coordination upon authorization
+
+The attached report provides complete details of our analysis. I'm confident we can navigate the TxDOT requirements efficiently and deliver a successful project.
+
+Please let me know your availability for a follow-up discussion. We're excited about the opportunity to partner with you on this development.
+
+Best regards,
+
+Anthony Goode, P.E.
+Principal Engineer
+Goode Faith Engineering
+Direct: (512) 555-0123
+Mobile: (512) 555-4567
+agoode@goodefaith.com
+www.goodefaith.com
+
+"Building Texas with Integrity Since 2021"</textarea>
+                    </div>
+
+                    <div class="email-actions">
+                        <button class="btn btn-secondary">Save Draft</button>
+                        <button class="btn btn-secondary">Attach Report</button>
+                        <button class="btn btn-primary">Send to Client</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Navigation -->
+    <div class="bottom-nav">
+        <button class="nav-btn" id="prevBtn" onclick="prevScreen()" disabled>← Previous</button>
+        <button class="nav-btn" id="nextBtn" onclick="nextScreen()">Next →</button>
+    </div>
+
+    <!-- Modal -->
+    <div class="modal" id="explanationModal">
+        <div class="modal-content">
+            <h3 class="modal-title" id="modalTitle">Fee Basis Explanation</h3>
+            <p class="modal-text" id="modalText"></p>
+            <button class="btn btn-primary" onclick="closeModal()">Close</button>
+        </div>
+    </div>
+
+    <script>
+        let currentScreen = 1;
+        const totalScreens = 6;
+        let inputMethod = 'address';
+
+        const tasks = [
+            { name: 'County Jurisdiction', category: 'Boundaries' },
+            { name: 'City Limits Check', category: 'Boundaries' },
+            { name: 'Zoning Classification', category: 'Boundaries' },
+            { name: 'Parcel Dimensions', category: 'Physical' },
+            { name: 'Elevation Analysis', category: 'Physical' },
+            { name: 'Hydrology Assessment', category: 'Physical' },
+            { name: 'Soil Classification', category: 'Physical' },
+            { name: 'Tree Survey', category: 'Physical' },
+            { name: 'Road Analysis', category: 'Transportation' },
+            { name: 'TxDOT Projects', category: 'Transportation' },
+            { name: 'Water Infrastructure', category: 'Utilities' },
+            { name: 'Wastewater Systems', category: 'Utilities' },
+            { name: 'Electric Service', category: 'Utilities' },
+            { name: 'Easement Research', category: 'Utilities' },
+            { name: 'Deed History', category: 'Legal' },
+            { name: 'Plat Analysis', category: 'Legal' }
+        ];
+
+        const explanations = {
+            zoning: {
+                title: 'Site Planning & Zoning - $18,000',
+                text: 'Based on comparable project: Target at 1101 C-Bar Ranch Trail (5.8 acres, C-2 zoning, Cedar Park). That project required 115 hours. We\'ve added 5 hours for your specific TxDOT adjacency requirements. Includes preliminary site layout, zoning verification, and city pre-submission meetings.'
+            },
+            civil: {
+                title: 'Civil Engineering Design - $36,000',
+                text: 'Comparable to recent 5+ acre commercial projects in Cedar Park. The Highway 183 frontage adds complexity similar to our Whitestone Boulevard project. Includes grading, drainage, utility plans, and construction documents. TxDOT standards require additional detail for access points.'
+            },
+            txdot: {
+                title: 'TxDOT Coordination - $12,000',
+                text: 'Required due to Highway 183 state highway designation and active Project #0120-05-028. Includes access permit application, traffic impact analysis, coordination meetings, and design modifications to meet TxDOT standards. Based on similar work for FM 1431 commercial development.'
+            },
+            drainage: {
+                title: 'Drainage & Detention - $24,000',
+                text: 'Type B soils with 3.2% slope require engineered detention system. Comparable to Cedar Park Commerce Center which required 0.8-acre detention pond. Includes hydrologic analysis, detention design, and water quality controls per City of Cedar Park requirements.'
+            },
+            trees: {
+                title: 'Tree Mitigation - $6,000',
+                text: '12 protected hardwood trees (8-15" diameter) require mitigation per Cedar Park ordinances. Fee based on Cypress Creek development with 15 trees. Includes survey, mitigation plan, and coordination with city arborist.'
+            },
+            utilities: {
+                title: 'Utility Coordination - $9,000',
+                text: 'Design and coordination with Cedar Park Water/Wastewater and Pedernales Electric Coop. The existing 3-phase power reduces complexity. Includes service applications, capacity letters, and design coordination meetings.'
+            }
+        };
+
+        function toggleInputMethod(method) {
+            inputMethod = method;
+            const buttons = document.querySelectorAll('.toggle-btn');
+            buttons.forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+            
+            const addressGroup = document.getElementById('addressGroup');
+            const coordinatesGroup = document.getElementById('coordinatesGroup');
+            
+            if (method === 'address') {
+                addressGroup.classList.remove('disabled');
+                coordinatesGroup.classList.add('disabled');
+                document.getElementById('addressInput').value = '12345 Highway 183, Cedar Park, TX 78613';
+                document.getElementById('latInput').value = '';
+                document.getElementById('lngInput').value = '';
+            } else {
+                addressGroup.classList.add('disabled');
+                coordinatesGroup.classList.remove('disabled');
+                document.getElementById('addressInput').value = '';
+                document.getElementById('latInput').value = '30.5134';
+                document.getElementById('lngInput').value = '-97.8269';
+            }
+        }
+
+        function initializeTasks() {
+            const grid = document.getElementById('taskGrid');
+            grid.innerHTML = '';
+            tasks.forEach((task, index) => {
+                const card = document.createElement('div');
+                card.className = 'task-card';
+                card.innerHTML = `
+                    <div class="task-header">
+                        <span class="task-name">${task.name}</span>
+                        <div class="task-status status-pending" id="status-${index}">
+                            <span id="icon-${index}"></span>
+                        </div>
+                    </div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="progress-${index}" style="width: 0%;"></div>
+                    </div>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        function animateTasks() {
+            tasks.forEach((task, index) => {
+                setTimeout(() => {
+                    const card = document.querySelectorAll('.task-card')[index];
+                    const status = document.getElementById(`status-${index}`);
+                    const icon = document.getElementById(`icon-${index}`);
+                    const progress = document.getElementById(`progress-${index}`);
+                    
+                    card.classList.add('running');
+                    status.className = 'task-status status-running';
+                    
+                    let progressValue = 0;
+                    const progressInterval = setInterval(() => {
+                        progressValue += Math.random() * 35;
+                        if (progressValue >= 100) {
+                            progressValue = 100;
+                            clearInterval(progressInterval);
+                            
+                            setTimeout(() => {
+                                card.classList.remove('running');
+                                card.classList.add('completed');
+                                status.className = 'task-status status-completed';
+                                icon.textContent = '✓';
+                            }, 200);
+                        }
+                        progress.style.width = progressValue + '%';
+                    }, 150);
+                }, index * 250);
+            });
+        }
+
+        function showScreen(screenNumber) {
+            document.querySelectorAll('.screen').forEach(screen => {
+                screen.classList.remove('active');
+            });
+            
+            document.getElementById(`screen${screenNumber}`).classList.add('active');
+            
+            document.querySelectorAll('.nav-dot').forEach(dot => {
+                dot.classList.remove('active');
+            });
+            document.querySelector(`.nav-dot[data-screen="${screenNumber}"]`).classList.add('active');
+            
+            document.getElementById('prevBtn').disabled = screenNumber === 1;
+            document.getElementById('nextBtn').disabled = screenNumber === totalScreens;
+            
+            if (screenNumber === 2) {
+                initializeTasks();
+                setTimeout(() => {
+                    animateTasks();
+                }, 300);
+            }
+        }
+
+        function nextScreen() {
+            if (currentScreen < totalScreens) {
+                currentScreen++;
+                showScreen(currentScreen);
+            }
+        }
+
+        function prevScreen() {
+            if (currentScreen > 1) {
+                currentScreen--;
+                showScreen(currentScreen);
+            }
+        }
+
+        function showExplanation(type) {
+            const modal = document.getElementById('explanationModal');
+            const modalTitle = document.getElementById('modalTitle');
+            const modalText = document.getElementById('modalText');
+            
+            modalTitle.textContent = explanations[type].title;
+            modalText.innerHTML = explanations[type].text + '<br><br><a href="#" class="modal-link">View comparable project details →</a>';
+            
+            modal.classList.add('active');
+        }
+
+        function closeModal() {
+            document.getElementById('explanationModal').classList.remove('active');
+        }
+
+        window.addEventListener('load', () => {
+            initializeTasks();
+            
+            document.querySelectorAll('.nav-dot').forEach(dot => {
+                dot.addEventListener('click', (e) => {
+                    currentScreen = parseInt(e.target.dataset.screen);
+                    showScreen(currentScreen);
+                });
+            });
+        });
+
+        document.getElementById('explanationModal').addEventListener('click', (e) => {
+            if (e.target.id === 'explanationModal') {
+                closeModal();
+            }
+        });
+    </script>
 </body>
 </html>
