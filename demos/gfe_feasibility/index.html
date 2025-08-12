@@ -532,7 +532,6 @@
 
         .fee-service-meta {
             display: flex;
-            gap: 20px;
             align-items: center;
             flex-wrap: nowrap;
         }
@@ -540,12 +539,16 @@
         .fee-hours {
             color: #9ca3af;
             font-size: 0.85em;
+            min-width: 75px;
+            text-align: left;
         }
 
         .fee-amount {
             color: #ff6b6b;
             font-weight: 600;
             font-size: 1em;
+            min-width: 80px;
+            text-align: left;
         }
 
         .btn-explain {
@@ -558,6 +561,7 @@
             cursor: pointer;
             transition: all 0.2s ease;
             white-space: nowrap;
+            margin-left: auto;
         }
 
         .btn-explain:hover {
@@ -637,6 +641,55 @@
             resize: vertical;
         }
 
+        /* Email Attachment */
+        .attachment-section {
+            margin-top: 15px;
+            padding: 12px;
+            background: #1e1e1e;
+            border: 1px solid #3a3a3a;
+            border-radius: 4px;
+            display: none;
+        }
+
+        .attachment-section.active {
+            display: block;
+        }
+
+        .attachment-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .attachment-item:hover {
+            opacity: 0.8;
+        }
+
+        .attachment-icon {
+            width: 24px;
+            height: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #8b3a3a;
+            border-radius: 4px;
+            color: white;
+            font-size: 0.8em;
+        }
+
+        .attachment-name {
+            color: #ff6b6b;
+            font-size: 0.9em;
+        }
+
+        .attachment-size {
+            color: #6b7280;
+            font-size: 0.8em;
+            margin-left: auto;
+        }
+
         .email-actions {
             padding: 15px 20px;
             background: #242424;
@@ -682,6 +735,11 @@
             max-width: 900px;
         }
 
+        .modal-content.full {
+            max-width: 95%;
+            max-height: 95vh;
+        }
+
         .modal-title {
             color: #ffffff;
             font-size: 1.1em;
@@ -696,9 +754,13 @@
         }
 
         .modal-link {
-            color: #8b3a3a;
+            color: #ff6b6b;
             text-decoration: none;
             font-weight: 500;
+        }
+
+        .modal-link:hover {
+            text-decoration: underline;
         }
 
         .modal-close {
@@ -722,6 +784,19 @@
         .modal-close:hover {
             background: #8b3a3a;
             color: white;
+        }
+
+        /* Attachment Preview */
+        .attachment-preview {
+            width: 100%;
+            text-align: center;
+        }
+
+        .attachment-preview img {
+            max-width: 100%;
+            height: auto;
+            border: 1px solid #3a3a3a;
+            border-radius: 4px;
         }
 
         /* Map Widget with Satellite */
@@ -822,13 +897,12 @@
         }
 
         .detail-link {
-            color: #8b3a3a;
+            color: #ff6b6b;
             text-decoration: none;
             font-weight: 500;
         }
 
         .detail-link:hover {
-            color: #a04444;
             text-decoration: underline;
         }
 
@@ -1092,7 +1166,7 @@
                     </div>
 
                     <div class="summary-grid">
-                        <div class="summary-card">
+                        <div class="summary-card" onclick="showBoundariesModal()">
                             <div class="card-header">
                                 <div class="card-icon">🗺️</div>
                                 <div class="card-title">Boundaries & Jurisdictions</div>
@@ -1105,7 +1179,7 @@
                             </div>
                         </div>
 
-                        <div class="summary-card">
+                        <div class="summary-card" onclick="showPhysicalModal()">
                             <div class="card-header">
                                 <div class="card-icon">🏔️</div>
                                 <div class="card-title">Physical Features</div>
@@ -1133,7 +1207,7 @@
                             </div>
                         </div>
 
-                        <div class="summary-card">
+                        <div class="summary-card" onclick="showUtilitiesModal()">
                             <div class="card-header">
                                 <div class="card-icon">⚡</div>
                                 <div class="card-title">Utilities Status</div>
@@ -1147,7 +1221,7 @@
                             </div>
                         </div>
 
-                        <div class="summary-card">
+                        <div class="summary-card" onclick="showHydrologyModal()">
                             <div class="card-header">
                                 <div class="card-icon">💧</div>
                                 <div class="card-title">Hydrology & Environment</div>
@@ -1161,7 +1235,7 @@
                             </div>
                         </div>
 
-                        <div class="summary-card">
+                        <div class="summary-card" onclick="showLegalModal()">
                             <div class="card-header">
                                 <div class="card-icon">📄</div>
                                 <div class="card-title">Legal & Records</div>
@@ -1382,11 +1456,19 @@ agoode@goodefaith.com
 www.goodefaith.com
 
 "Building Texas with Integrity Since 2021"</textarea>
+                        
+                        <div class="attachment-section" id="attachmentSection">
+                            <div class="attachment-item" onclick="showAttachmentPreview()">
+                                <div class="attachment-icon">📄</div>
+                                <span class="attachment-name">Property_Analysis_Report_12345_Hwy183.pdf</span>
+                                <span class="attachment-size">2.4 MB</span>
+                            </div>
+                        </div>
                     </div>
 
                     <div class="email-actions">
                         <button class="btn btn-secondary">Save Draft</button>
-                        <button class="btn btn-secondary">Attach Report</button>
+                        <button class="btn btn-secondary" onclick="attachReport()">Attach Report</button>
                         <button class="btn btn-primary">Send to Client</button>
                     </div>
                 </div>
@@ -1400,7 +1482,89 @@ www.goodefaith.com
         <button class="nav-btn" id="nextBtn" onclick="nextScreen()">Next →</button>
     </div>
 
-    <!-- Transportation Modal -->
+    <!-- All Detail Modals -->
+    
+    <!-- Boundaries Modal -->
+    <div class="modal" id="boundariesModal">
+        <div class="modal-content large" style="position: relative;">
+            <button class="modal-close" onclick="closeBoundariesModal()">×</button>
+            <h2 class="modal-title">
+                <span style="font-size: 1.2em;">🗺️</span>
+                Boundaries & Jurisdictions Analysis
+            </h2>
+            <div class="detail-panel">
+                <p class="detail-text">
+                    <strong>County Jurisdiction:</strong> Travis County, Texas<br>
+                    • Tax Rate: 0.369419 per $100 valuation<br>
+                    • County Services: Full emergency services coverage<br>
+                    • Development Authority: Subject to county regulations for unincorporated areas
+                </p>
+                <p class="detail-text">
+                    <strong>City Limits:</strong> Within Cedar Park city limits<br>
+                    • Incorporated: January 1973<br>
+                    • City Services: Full municipal services available<br>
+                    • Development Standards: Cedar Park Unified Development Code applies
+                </p>
+                <p class="detail-text">
+                    <strong>Zoning Classification:</strong> C-2 General Commercial<br>
+                    • Permitted Uses: Retail, office, restaurant, service businesses<br>
+                    • Maximum Height: 45 feet (3 stories)<br>
+                    • Setbacks: Front 25ft, Side 10ft, Rear 20ft<br>
+                    • Parking Requirements: 1 space per 200 sq ft retail<br>
+                    <a href="#" class="detail-link">View Full Zoning Ordinance →</a>
+                </p>
+                <p class="detail-text">
+                    <strong>ETJ Status:</strong> Not applicable - property is within city limits<br>
+                    • Full city services and regulations apply<br>
+                    • No county-only development standards
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Physical Features Modal -->
+    <div class="modal" id="physicalModal">
+        <div class="modal-content large" style="position: relative;">
+            <button class="modal-close" onclick="closePhysicalModal()">×</button>
+            <h2 class="modal-title">
+                <span style="font-size: 1.2em;">🏔️</span>
+                Physical Features Analysis
+            </h2>
+            <div class="detail-panel">
+                <p class="detail-text">
+                    <strong>Parcel Dimensions:</strong><br>
+                    • Total Area: 5.2 acres (226,512 square feet)<br>
+                    • Perimeter: 892 linear feet<br>
+                    • Shape: Irregular quadrilateral<br>
+                    • Buildable Area: Approximately 4.8 acres after setbacks
+                </p>
+                <p class="detail-text">
+                    <strong>Topography:</strong><br>
+                    • Average Elevation: 782 feet above sea level<br>
+                    • Maximum Elevation: 794 feet (northeast corner)<br>
+                    • Minimum Elevation: 771 feet (southwest corner)<br>
+                    • Maximum Slope: 3.2% - suitable for development without extensive grading
+                </p>
+                <p class="detail-text">
+                    <strong>Soil Analysis:</strong><br>
+                    • Type: Primarily Type B (moderate drainage)<br>
+                    • Bearing Capacity: 2,500 PSF typical<br>
+                    • Percolation Rate: 0.52 inches/hour<br>
+                    • Recommendation: Standard foundation design adequate
+                </p>
+                <p class="detail-text">
+                    <strong>Vegetation:</strong><br>
+                    • Tree Count: 12 protected hardwood trees<br>
+                    • Species: Live Oak (8), Cedar Elm (4)<br>
+                    • Size Range: 8-15 inch diameter<br>
+                    • Mitigation Required: Per Cedar Park Tree Preservation Ordinance<br>
+                    <a href="#" class="detail-link">View Tree Survey Report →</a>
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Transportation Modal (existing) -->
     <div class="modal" id="transportationModal">
         <div class="modal-content large" style="position: relative;">
             <button class="modal-close" onclick="closeTransportationModal()">×</button>
@@ -1433,6 +1597,136 @@ www.goodefaith.com
                 </p>
                 <p class="detail-text">
                     <strong>Engineering Impact:</strong> Coordination with TxDOT required for all access permits. Design must comply with TxDOT standards for driveway spacing and turn lane requirements.
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Utilities Modal -->
+    <div class="modal" id="utilitiesModal">
+        <div class="modal-content large" style="position: relative;">
+            <button class="modal-close" onclick="closeUtilitiesModal()">×</button>
+            <h2 class="modal-title">
+                <span style="font-size: 1.2em;">⚡</span>
+                Utilities Status Analysis
+            </h2>
+            <div class="detail-panel">
+                <p class="detail-text">
+                    <strong>Water Service:</strong><br>
+                    • Provider: Cedar Park Water Department<br>
+                    • Available Capacity: 12" main at property line<br>
+                    • Pressure: 65 PSI static, 58 PSI residual<br>
+                    • Connection Fee: $8,500 for 2" meter<br>
+                    • Fire Flow Available: 2,500 GPM
+                </p>
+                <p class="detail-text">
+                    <strong>Wastewater Service:</strong><br>
+                    • Provider: Cedar Park Wastewater<br>
+                    • Main Size: 8" gravity main at site<br>
+                    • Depth: 8.5 feet at connection point<br>
+                    • Capacity: Adequate for 100,000 GPD<br>
+                    • Impact Fee: $4,200 per ERU
+                </p>
+                <p class="detail-text">
+                    <strong>Electric Service:</strong><br>
+                    • Provider: Pedernales Electric Cooperative<br>
+                    • Available Service: 3-phase power at site<br>
+                    • Voltage: 277/480V available<br>
+                    • Transformer Location: 150 feet from property<br>
+                    • Demand Capacity: Up to 2 MW available
+                </p>
+                <p class="detail-text">
+                    <strong>Other Utilities:</strong><br>
+                    • Natural Gas: Atmos Energy - 4" main in ROW<br>
+                    • Telecom: AT&T and Spectrum available<br>
+                    • Fiber: Google Fiber serviceable<br>
+                    <a href="#" class="detail-link">View Utility Availability Letter →</a>
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Hydrology Modal -->
+    <div class="modal" id="hydrologyModal">
+        <div class="modal-content large" style="position: relative;">
+            <button class="modal-close" onclick="closeHydrologyModal()">×</button>
+            <h2 class="modal-title">
+                <span style="font-size: 1.2em;">💧</span>
+                Hydrology & Environment Analysis
+            </h2>
+            <div class="detail-panel">
+                <p class="detail-text">
+                    <strong>Surface Water:</strong><br>
+                    • On-site Water Features: None<br>
+                    • Nearest Creek: Brushy Creek - 1,200 feet east<br>
+                    • Watershed: Upper Brushy Creek<br>
+                    • Drainage Pattern: Sheet flow to southeast
+                </p>
+                <p class="detail-text">
+                    <strong>Floodplain Status:</strong><br>
+                    • FEMA Map: 48453C0360J (effective 09/26/2008)<br>
+                    • Flood Zone: Zone X (minimal flood hazard)<br>
+                    • Base Flood Elevation: Not applicable<br>
+                    • Insurance Requirement: Not mandatory
+                </p>
+                <p class="detail-text">
+                    <strong>Environmental Zones:</strong><br>
+                    • TCEQ Edwards Aquifer: Not in recharge or contributing zone<br>
+                    • Highland Lakes Watershed: Not within<br>
+                    • Water Quality Zone: Standard requirements<br>
+                    • Detention Required: Yes, per city ordinance
+                </p>
+                <p class="detail-text">
+                    <strong>Environmental Assessment:</strong><br>
+                    • Wetlands: None identified<br>
+                    • Endangered Species: No critical habitat<br>
+                    • Historical/Archaeological: No sites identified<br>
+                    • Phase I ESA: Recommended prior to purchase<br>
+                    <a href="#" class="detail-link">View Environmental Constraints Map →</a>
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Legal Modal -->
+    <div class="modal" id="legalModal">
+        <div class="modal-content large" style="position: relative;">
+            <button class="modal-close" onclick="closeLegalModal()">×</button>
+            <h2 class="modal-title">
+                <span style="font-size: 1.2em;">📄</span>
+                Legal & Records Analysis
+            </h2>
+            <div class="detail-panel">
+                <p class="detail-text">
+                    <strong>Property Records:</strong><br>
+                    • Parcel ID: R123456<br>
+                    • Legal Description: Lot 5, Block A, Cedar Business Park<br>
+                    • Platted: Yes - Plat #2021-045<br>
+                    • Recording Date: March 15, 2021
+                </p>
+                <p class="detail-text">
+                    <strong>Deed History:</strong><br>
+                    • Current Owner: Johnson Properties LLC<br>
+                    • Purchase Date: June 2019<br>
+                    • Purchase Price: $1,250,000<br>
+                    • Clear Chain of Title: Verified back to 1987<br>
+                    • Liens/Encumbrances: None found
+                </p>
+                <p class="detail-text">
+                    <strong>Restrictions & Covenants:</strong><br>
+                    • Standard commercial restrictions apply<br>
+                    • No residential use permitted<br>
+                    • Architectural review required<br>
+                    • Signage restrictions per city code<br>
+                    • No hazardous materials storage
+                </p>
+                <p class="detail-text">
+                    <strong>Survey Information:</strong><br>
+                    • Last Survey: January 2023<br>
+                    • Survey Type: ALTA/NSPS Land Title Survey<br>
+                    • Boundary Disputes: None<br>
+                    • Encroachments: None identified<br>
+                    <a href="#" class="detail-link">View Survey Documents →</a>
                 </p>
             </div>
         </div>
@@ -1481,6 +1775,17 @@ www.goodefaith.com
         </div>
     </div>
 
+    <!-- Attachment Preview Modal -->
+    <div class="modal" id="attachmentModal">
+        <div class="modal-content full" style="position: relative;">
+            <button class="modal-close" onclick="closeAttachmentModal()">×</button>
+            <h3 class="modal-title">Property Analysis Report Preview</h3>
+            <div class="attachment-preview">
+                <img src="https://templatearchive.com/wp-content/uploads/2020/10/construction-estimate-template-10-scaled.jpg" alt="Property Analysis Report">
+            </div>
+        </div>
+    </div>
+
     <script>
         let currentScreen = 1;
         const totalScreens = 5;
@@ -1508,27 +1813,27 @@ www.goodefaith.com
         const explanations = {
             zoning: {
                 title: 'Site Planning & Zoning - $18,000',
-                text: 'Based on comparable project: Target at 1101 C-Bar Ranch Trail (5.8 acres, C-2 zoning, Cedar Park). That project required 115 hours. We\'ve added 5 hours for your specific TxDOT adjacency requirements. Includes preliminary site layout, zoning verification, and city pre-submission meetings.'
+                text: 'Based on comparable project: Target at 1101 C-Bar Ranch Trail (5.8 acres, C-2 zoning, Cedar Park). That project required 115 hours. We\'ve added 5 hours for your specific TxDOT adjacency requirements. Includes preliminary site layout, zoning verification, and city pre-submission meetings.<br><br><a href="#" class="modal-link">View comparable project details →</a>'
             },
             civil: {
                 title: 'Civil Engineering Design - $36,000',
-                text: 'Comparable to recent 5+ acre commercial projects in Cedar Park. The Highway 183 frontage adds complexity similar to our Whitestone Boulevard project. Includes grading, drainage, utility plans, and construction documents. TxDOT standards require additional detail for access points.'
+                text: 'Comparable to recent 5+ acre commercial projects in Cedar Park. The Highway 183 frontage adds complexity similar to our Whitestone Boulevard project. Includes grading, drainage, utility plans, and construction documents. TxDOT standards require additional detail for access points.<br><br><a href="#" class="modal-link">View comparable project details →</a>'
             },
             txdot: {
                 title: 'TxDOT Coordination - $12,000',
-                text: 'Required due to Highway 183 state highway designation and active Project #0120-05-028. Includes access permit application, traffic impact analysis, coordination meetings, and design modifications to meet TxDOT standards. Based on similar work for FM 1431 commercial development.'
+                text: 'Required due to Highway 183 state highway designation and active Project #0120-05-028. Includes access permit application, traffic impact analysis, coordination meetings, and design modifications to meet TxDOT standards. Based on similar work for FM 1431 commercial development.<br><br><a href="#" class="modal-link">View comparable project details →</a>'
             },
             drainage: {
                 title: 'Drainage & Detention - $24,000',
-                text: 'Type B soils with 3.2% slope require engineered detention system. Comparable to Cedar Park Commerce Center which required 0.8-acre detention pond. Includes hydrologic analysis, detention design, and water quality controls per City of Cedar Park requirements.'
+                text: 'Type B soils with 3.2% slope require engineered detention system. Comparable to Cedar Park Commerce Center which required 0.8-acre detention pond. Includes hydrologic analysis, detention design, and water quality controls per City of Cedar Park requirements.<br><br><a href="#" class="modal-link">View comparable project details →</a>'
             },
             trees: {
                 title: 'Tree Mitigation - $6,000',
-                text: '12 protected hardwood trees (8-15" diameter) require mitigation per Cedar Park ordinances. Fee based on Cypress Creek development with 15 trees. Includes survey, mitigation plan, and coordination with city arborist.'
+                text: '12 protected hardwood trees (8-15" diameter) require mitigation per Cedar Park ordinances. Fee based on Cypress Creek development with 15 trees. Includes survey, mitigation plan, and coordination with city arborist.<br><br><a href="#" class="modal-link">View comparable project details →</a>'
             },
             utilities: {
                 title: 'Utility Coordination - $9,000',
-                text: 'Design and coordination with Cedar Park Water/Wastewater and Pedernales Electric Coop. The existing 3-phase power reduces complexity. Includes service applications, capacity letters, and design coordination meetings.'
+                text: 'Design and coordination with Cedar Park Water/Wastewater and Pedernales Electric Coop. The existing 3-phase power reduces complexity. Includes service applications, capacity letters, and design coordination meetings.<br><br><a href="#" class="modal-link">View comparable project details →</a>'
             }
         };
 
@@ -1649,12 +1954,53 @@ www.goodefaith.com
             }
         }
 
+        // Modal functions for each section
+        function showBoundariesModal() {
+            document.getElementById('boundariesModal').classList.add('active');
+        }
+
+        function closeBoundariesModal() {
+            document.getElementById('boundariesModal').classList.remove('active');
+        }
+
+        function showPhysicalModal() {
+            document.getElementById('physicalModal').classList.add('active');
+        }
+
+        function closePhysicalModal() {
+            document.getElementById('physicalModal').classList.remove('active');
+        }
+
         function showTransportationModal() {
             document.getElementById('transportationModal').classList.add('active');
         }
 
         function closeTransportationModal() {
             document.getElementById('transportationModal').classList.remove('active');
+        }
+
+        function showUtilitiesModal() {
+            document.getElementById('utilitiesModal').classList.add('active');
+        }
+
+        function closeUtilitiesModal() {
+            document.getElementById('utilitiesModal').classList.remove('active');
+        }
+
+        function showHydrologyModal() {
+            document.getElementById('hydrologyModal').classList.add('active');
+        }
+
+        function closeHydrologyModal() {
+            document.getElementById('hydrologyModal').classList.remove('active');
+        }
+
+        function showLegalModal() {
+            document.getElementById('legalModal').classList.add('active');
+        }
+
+        function closeLegalModal() {
+            document.getElementById('legalModal').classList.remove('active');
         }
 
         function showRiskModal() {
@@ -1671,13 +2017,27 @@ www.goodefaith.com
             const modalText = document.getElementById('modalText');
             
             modalTitle.textContent = explanations[type].title;
-            modalText.innerHTML = explanations[type].text + '<br><br><a href="#" class="modal-link">View comparable project details →</a>';
+            modalText.innerHTML = explanations[type].text;
             
             modal.classList.add('active');
         }
 
         function closeModal() {
             document.getElementById('explanationModal').classList.remove('active');
+        }
+
+        // Attachment functions
+        function attachReport() {
+            const attachmentSection = document.getElementById('attachmentSection');
+            attachmentSection.classList.add('active');
+        }
+
+        function showAttachmentPreview() {
+            document.getElementById('attachmentModal').classList.add('active');
+        }
+
+        function closeAttachmentModal() {
+            document.getElementById('attachmentModal').classList.remove('active');
         }
 
         window.addEventListener('load', () => {
@@ -1692,9 +2052,39 @@ www.goodefaith.com
         });
 
         // Close modals on outside click
+        document.getElementById('boundariesModal').addEventListener('click', (e) => {
+            if (e.target.id === 'boundariesModal') {
+                closeBoundariesModal();
+            }
+        });
+
+        document.getElementById('physicalModal').addEventListener('click', (e) => {
+            if (e.target.id === 'physicalModal') {
+                closePhysicalModal();
+            }
+        });
+
         document.getElementById('transportationModal').addEventListener('click', (e) => {
             if (e.target.id === 'transportationModal') {
                 closeTransportationModal();
+            }
+        });
+
+        document.getElementById('utilitiesModal').addEventListener('click', (e) => {
+            if (e.target.id === 'utilitiesModal') {
+                closeUtilitiesModal();
+            }
+        });
+
+        document.getElementById('hydrologyModal').addEventListener('click', (e) => {
+            if (e.target.id === 'hydrologyModal') {
+                closeHydrologyModal();
+            }
+        });
+
+        document.getElementById('legalModal').addEventListener('click', (e) => {
+            if (e.target.id === 'legalModal') {
+                closeLegalModal();
             }
         });
 
@@ -1707,6 +2097,12 @@ www.goodefaith.com
         document.getElementById('explanationModal').addEventListener('click', (e) => {
             if (e.target.id === 'explanationModal') {
                 closeModal();
+            }
+        });
+
+        document.getElementById('attachmentModal').addEventListener('click', (e) => {
+            if (e.target.id === 'attachmentModal') {
+                closeAttachmentModal();
             }
         });
     </script>
