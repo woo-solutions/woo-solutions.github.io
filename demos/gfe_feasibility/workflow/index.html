@@ -1,0 +1,983 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Property Analysis Workflow - Interactive Flowchart</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: radial-gradient(ellipse at center, #1e3c72 0%, #2a5298 100%);
+            min-height: 100vh;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .header {
+            position: absolute;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            text-align: center;
+            color: white;
+            z-index: 1000;
+            background: rgba(0,0,0,0.3);
+            padding: 15px 30px;
+            border-radius: 15px;
+            backdrop-filter: blur(10px);
+        }
+
+        .header h1 {
+            font-size: 1.8em;
+            font-weight: 300;
+            letter-spacing: 2px;
+            margin-bottom: 5px;
+        }
+
+        .header p {
+            font-size: 0.9em;
+            opacity: 0.9;
+        }
+
+        .canvas-container {
+            width: 100vw;
+            height: 100vh;
+            position: relative;
+            overflow: auto;
+        }
+
+        .flowchart {
+            position: relative;
+            width: 4000px;
+            height: 3000px;
+            padding: 100px;
+        }
+
+        svg {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        .flow-line {
+            stroke: rgba(255,255,255,0.3);
+            stroke-width: 2;
+            fill: none;
+            stroke-dasharray: 5,5;
+            animation: dash 20s linear infinite;
+        }
+
+        .flow-line.active {
+            stroke: #00ff88;
+            stroke-width: 3;
+            stroke-dasharray: none;
+            filter: drop-shadow(0 0 5px #00ff88);
+        }
+
+        .flow-line.conditional {
+            stroke: #ff6b9d;
+            stroke-dasharray: 10,5;
+        }
+
+        @keyframes dash {
+            to {
+                stroke-dashoffset: -100;
+            }
+        }
+
+        .arrow-marker {
+            fill: rgba(255,255,255,0.5);
+        }
+
+        .node {
+            position: absolute;
+            background: white;
+            border-radius: 12px;
+            padding: 15px 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            z-index: 10;
+            min-width: 180px;
+            text-align: center;
+        }
+
+        .node:hover {
+            transform: scale(1.05);
+            box-shadow: 0 15px 40px rgba(0,0,0,0.4);
+            z-index: 100;
+        }
+
+        .node.category {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            font-size: 1.1em;
+            font-weight: 600;
+            min-width: 220px;
+            padding: 20px 25px;
+            border: 3px solid rgba(255,255,255,0.2);
+        }
+
+        .node.container {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            border: 2px solid #667eea;
+            font-weight: 500;
+        }
+
+        .node.task {
+            background: linear-gradient(135deg, #d4fc79 0%, #96e6a1 100%);
+            border: 2px solid #43e97b;
+            font-size: 0.9em;
+        }
+
+        .node.conditional {
+            background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%);
+            border: 2px solid #ff6b9d;
+            font-size: 0.9em;
+            clip-path: polygon(10% 0%, 90% 0%, 100% 50%, 90% 100%, 10% 100%, 0% 50%);
+            padding: 20px 30px;
+        }
+
+        .node-icon {
+            font-size: 1.5em;
+            margin-bottom: 8px;
+        }
+
+        .node-title {
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        .node-subtitle {
+            font-size: 0.8em;
+            opacity: 0.8;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 2px 6px;
+            border-radius: 8px;
+            font-size: 0.7em;
+            margin-top: 5px;
+            background: rgba(0,0,0,0.2);
+            color: white;
+        }
+
+        .controls {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 10px;
+            z-index: 1000;
+            background: rgba(0,0,0,0.5);
+            padding: 15px;
+            border-radius: 15px;
+            backdrop-filter: blur(10px);
+        }
+
+        .control-btn {
+            padding: 8px 16px;
+            background: rgba(255,255,255,0.2);
+            color: white;
+            border: 1px solid rgba(255,255,255,0.3);
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 0.9em;
+        }
+
+        .control-btn:hover {
+            background: rgba(255,255,255,0.3);
+            transform: translateY(-2px);
+        }
+
+        .control-btn.active {
+            background: #667eea;
+            border-color: #667eea;
+        }
+
+        .legend {
+            position: fixed;
+            top: 100px;
+            right: 20px;
+            background: rgba(255,255,255,0.95);
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            z-index: 1000;
+            max-width: 200px;
+        }
+
+        .legend h3 {
+            margin-bottom: 15px;
+            color: #2c3e50;
+            font-size: 1em;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 10px;
+            font-size: 0.85em;
+        }
+
+        .legend-color {
+            width: 30px;
+            height: 20px;
+            border-radius: 4px;
+            border: 1px solid rgba(0,0,0,0.1);
+        }
+
+        .tooltip {
+            position: absolute;
+            background: #2c3e50;
+            color: white;
+            padding: 10px 15px;
+            border-radius: 8px;
+            font-size: 0.85em;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            z-index: 2000;
+            max-width: 250px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+        }
+
+        .tooltip.visible {
+            opacity: 1;
+        }
+
+        .pulse {
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% {
+                box-shadow: 0 0 0 0 rgba(102, 126, 234, 0.7);
+            }
+            70% {
+                box-shadow: 0 0 0 20px rgba(102, 126, 234, 0);
+            }
+            100% {
+                box-shadow: 0 0 0 0 rgba(102, 126, 234, 0);
+            }
+        }
+
+        .mini-map {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 200px;
+            height: 150px;
+            background: rgba(255,255,255,0.1);
+            border: 2px solid rgba(255,255,255,0.3);
+            border-radius: 8px;
+            z-index: 1000;
+            overflow: hidden;
+        }
+
+        .mini-map-viewport {
+            position: absolute;
+            background: rgba(102, 126, 234, 0.3);
+            border: 2px solid #667eea;
+            pointer-events: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>Property Analysis Workflow</h1>
+        <p>Interactive Flowchart View</p>
+    </div>
+
+    <div class="canvas-container" id="canvasContainer">
+        <div class="flowchart" id="flowchart">
+            <svg id="connectionsSvg">
+                <defs>
+                    <marker id="arrowhead" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto" class="arrow-marker">
+                        <polygon points="0 0, 10 3, 0 6" />
+                    </marker>
+                    <marker id="arrowhead-active" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto" fill="#00ff88">
+                        <polygon points="0 0, 10 3, 0 6" />
+                    </marker>
+                    <marker id="arrowhead-conditional" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto" fill="#ff6b9d">
+                        <polygon points="0 0, 10 3, 0 6" />
+                    </marker>
+                </defs>
+            </svg>
+        </div>
+    </div>
+
+    <div class="controls">
+        <button class="control-btn" onclick="zoomIn()">Zoom In</button>
+        <button class="control-btn" onclick="zoomOut()">Zoom Out</button>
+        <button class="control-btn" onclick="resetView()">Reset View</button>
+        <button class="control-btn" onclick="toggleConnections()">Toggle Lines</button>
+        <button class="control-btn active" onclick="toggleAnimation()">Animations</button>
+    </div>
+
+    <div class="legend">
+        <h3>Legend</h3>
+        <div class="legend-item">
+            <div class="legend-color" style="background: linear-gradient(135deg, #667eea, #764ba2);"></div>
+            <span>Main Category</span>
+        </div>
+        <div class="legend-item">
+            <div class="legend-color" style="background: linear-gradient(135deg, #f5f7fa, #c3cfe2);"></div>
+            <span>Container/Group</span>
+        </div>
+        <div class="legend-item">
+            <div class="legend-color" style="background: linear-gradient(135deg, #d4fc79, #96e6a1);"></div>
+            <span>Task</span>
+        </div>
+        <div class="legend-item">
+            <div class="legend-color" style="background: linear-gradient(135deg, #ffecd2, #fcb69f);"></div>
+            <span>Conditional</span>
+        </div>
+    </div>
+
+    <div class="tooltip" id="tooltip"></div>
+
+    <script>
+        let scale = 1;
+        let showConnections = true;
+        let animationsEnabled = true;
+        let nodes = [];
+        let connections = [];
+
+        const flowchartData = {
+            start: {
+                id: 'start',
+                type: 'category',
+                title: 'Property Analysis',
+                subtitle: 'Start Here',
+                icon: '🎯',
+                x: 100,
+                y: 1400
+            },
+            boundaries: {
+                id: 'boundaries',
+                type: 'category',
+                title: 'Boundaries & Jurisdictions',
+                icon: '🗺️',
+                x: 400,
+                y: 200,
+                connects: ['start']
+            },
+            county: {
+                id: 'county',
+                type: 'task',
+                title: 'County',
+                x: 700,
+                y: 100,
+                connects: ['boundaries']
+            },
+            city: {
+                id: 'city',
+                type: 'task',
+                title: 'City Limits Check',
+                x: 700,
+                y: 200,
+                connects: ['boundaries']
+            },
+            zoning: {
+                id: 'zoning',
+                type: 'conditional',
+                title: 'Zoning',
+                subtitle: 'If in City',
+                x: 950,
+                y: 200,
+                connects: ['city'],
+                conditional: true
+            },
+            etj: {
+                id: 'etj',
+                type: 'task',
+                title: 'City ETJ',
+                x: 700,
+                y: 300,
+                connects: ['boundaries']
+            },
+            physical: {
+                id: 'physical',
+                type: 'category',
+                title: 'Physical Features',
+                icon: '🏔️',
+                x: 400,
+                y: 500,
+                connects: ['start']
+            },
+            dimensions: {
+                id: 'dimensions',
+                type: 'container',
+                title: 'Basic Dimensions',
+                x: 700,
+                y: 450,
+                connects: ['physical']
+            },
+            perimeter: {
+                id: 'perimeter',
+                type: 'task',
+                title: 'Parcel Perimeter',
+                x: 950,
+                y: 400,
+                connects: ['dimensions']
+            },
+            area: {
+                id: 'area',
+                type: 'task',
+                title: 'Parcel Area',
+                x: 950,
+                y: 480,
+                connects: ['dimensions']
+            },
+            topology: {
+                id: 'topology',
+                type: 'container',
+                title: 'Topology',
+                x: 700,
+                y: 600,
+                connects: ['physical']
+            },
+            elevation: {
+                id: 'elevation',
+                type: 'task',
+                title: 'Elevation Analysis',
+                subtitle: 'Avg/Min/Max',
+                x: 950,
+                y: 580,
+                connects: ['topology']
+            },
+            slope: {
+                id: 'slope',
+                type: 'task',
+                title: 'Max Slope',
+                x: 950,
+                y: 660,
+                connects: ['topology']
+            },
+            hydrology: {
+                id: 'hydrology',
+                type: 'container',
+                title: 'Hydrology',
+                x: 700,
+                y: 800,
+                connects: ['physical']
+            },
+            creek: {
+                id: 'creek',
+                type: 'task',
+                title: 'Creek on Property',
+                x: 950,
+                y: 750,
+                connects: ['hydrology']
+            },
+            drainage: {
+                id: 'drainage',
+                type: 'task',
+                title: 'Drainage Infrastructure',
+                x: 950,
+                y: 850,
+                connects: ['hydrology']
+            },
+            floodplain: {
+                id: 'floodplain',
+                type: 'conditional',
+                title: 'FEMA/City Floodplain',
+                subtitle: 'If Drainage',
+                x: 1200,
+                y: 850,
+                connects: ['drainage'],
+                conditional: true
+            },
+            tceq: {
+                id: 'tceq',
+                type: 'task',
+                title: 'TCEQ Zones',
+                subtitle: 'Contributing/Edwards',
+                x: 950,
+                y: 950,
+                connects: ['hydrology']
+            },
+            fiveacres: {
+                id: 'fiveacres',
+                type: 'conditional',
+                title: '>5 Acres Check',
+                subtitle: 'If TCEQ',
+                x: 1200,
+                y: 950,
+                connects: ['tceq'],
+                conditional: true
+            },
+            trees: {
+                id: 'trees',
+                type: 'container',
+                title: 'Trees',
+                x: 700,
+                y: 1100,
+                connects: ['physical']
+            },
+            hardwood: {
+                id: 'hardwood',
+                type: 'task',
+                title: 'Hardwood Trees',
+                x: 950,
+                y: 1050,
+                connects: ['trees']
+            },
+            hardwoodDetail: {
+                id: 'hardwoodDetail',
+                type: 'conditional',
+                title: 'Count & Size',
+                subtitle: 'If Hardwood',
+                x: 1200,
+                y: 1050,
+                connects: ['hardwood'],
+                conditional: true
+            },
+            cedar: {
+                id: 'cedar',
+                type: 'task',
+                title: 'Cedar/Trash Trees',
+                x: 950,
+                y: 1150,
+                connects: ['trees']
+            },
+            habitat: {
+                id: 'habitat',
+                type: 'task',
+                title: 'Critical Habitat',
+                x: 700,
+                y: 1250,
+                connects: ['physical']
+            },
+            transportation: {
+                id: 'transportation',
+                type: 'category',
+                title: 'Roads & Transportation',
+                icon: '🚗',
+                x: 400,
+                y: 1450,
+                connects: ['start']
+            },
+            roads: {
+                id: 'roads',
+                type: 'container',
+                title: 'Abutting Roads',
+                x: 700,
+                y: 1400,
+                connects: ['transportation']
+            },
+            frontage: {
+                id: 'frontage',
+                type: 'task',
+                title: 'Parcel Frontage',
+                x: 950,
+                y: 1350,
+                connects: ['roads']
+            },
+            driveways: {
+                id: 'driveways',
+                type: 'task',
+                title: 'Driveway Analysis',
+                subtitle: 'Same/Opposite Side',
+                x: 950,
+                y: 1430,
+                connects: ['roads']
+            },
+            txdot: {
+                id: 'txdot',
+                type: 'task',
+                title: 'TxDOT Roadway',
+                x: 950,
+                y: 1510,
+                connects: ['roads']
+            },
+            txdotProject: {
+                id: 'txdotProject',
+                type: 'conditional',
+                title: 'TxDOT Projects',
+                subtitle: 'If TxDOT Road',
+                x: 1200,
+                y: 1510,
+                connects: ['txdot'],
+                conditional: true
+            },
+            utilities: {
+                id: 'utilities',
+                type: 'category',
+                title: 'Utilities',
+                icon: '⚡',
+                x: 400,
+                y: 1750,
+                connects: ['start']
+            },
+            water: {
+                id: 'water',
+                type: 'container',
+                title: 'Water',
+                x: 700,
+                y: 1650,
+                connects: ['utilities']
+            },
+            waterCCN: {
+                id: 'waterCCN',
+                type: 'task',
+                title: 'Water CCN',
+                x: 950,
+                y: 1650,
+                connects: ['water']
+            },
+            waterService: {
+                id: 'waterService',
+                type: 'conditional',
+                title: 'Water Service',
+                subtitle: 'Size & Hydrants',
+                x: 1200,
+                y: 1650,
+                connects: ['waterCCN'],
+                conditional: true
+            },
+            wastewater: {
+                id: 'wastewater',
+                type: 'container',
+                title: 'Wastewater',
+                x: 700,
+                y: 1750,
+                connects: ['utilities']
+            },
+            wastewaterCCN: {
+                id: 'wastewaterCCN',
+                type: 'task',
+                title: 'Wastewater CCN',
+                x: 950,
+                y: 1750,
+                connects: ['wastewater']
+            },
+            electric: {
+                id: 'electric',
+                type: 'container',
+                title: 'Electric',
+                x: 700,
+                y: 1850,
+                connects: ['utilities']
+            },
+            electricCCN: {
+                id: 'electricCCN',
+                type: 'task',
+                title: 'Electric CCN',
+                x: 950,
+                y: 1850,
+                connects: ['electric']
+            },
+            electricPhase: {
+                id: 'electricPhase',
+                type: 'conditional',
+                title: '3-Phase/Single',
+                subtitle: 'If Available',
+                x: 1200,
+                y: 1850,
+                connects: ['electricCCN'],
+                conditional: true
+            },
+            easements: {
+                id: 'easements',
+                type: 'container',
+                title: 'Easements',
+                x: 700,
+                y: 1950,
+                connects: ['utilities']
+            },
+            easementTypes: {
+                id: 'easementTypes',
+                type: 'task',
+                title: 'All Easement Types',
+                subtitle: 'Water/WW/Elec/Drain',
+                x: 950,
+                y: 1950,
+                connects: ['easements']
+            },
+            legal: {
+                id: 'legal',
+                type: 'category',
+                title: 'Legal Documents',
+                icon: '📄',
+                x: 400,
+                y: 2200,
+                connects: ['start']
+            },
+            platted: {
+                id: 'platted',
+                type: 'task',
+                title: 'Platted Lot',
+                x: 700,
+                y: 2150,
+                connects: ['legal']
+            },
+            plats: {
+                id: 'plats',
+                type: 'conditional',
+                title: 'Plats Available',
+                subtitle: 'If Platted',
+                x: 950,
+                y: 2150,
+                connects: ['platted'],
+                conditional: true
+            },
+            deed: {
+                id: 'deed',
+                type: 'task',
+                title: 'Oldest Deed',
+                x: 700,
+                y: 2250,
+                connects: ['legal']
+            }
+        };
+
+        function initializeFlowchart() {
+            const flowchart = document.getElementById('flowchart');
+            const svg = document.getElementById('connectionsSvg');
+            
+            // Create nodes
+            Object.values(flowchartData).forEach(nodeData => {
+                const node = createNode(nodeData);
+                flowchart.appendChild(node);
+                nodes.push(node);
+            });
+            
+            // Draw connections
+            drawConnections();
+            
+            // Center view on start
+            centerView();
+        }
+
+        function createNode(data) {
+            const node = document.createElement('div');
+            node.className = `node ${data.type}`;
+            node.id = data.id;
+            node.style.left = data.x + 'px';
+            node.style.top = data.y + 'px';
+            node.dataset.nodeId = data.id;
+            
+            if (data.icon) {
+                node.innerHTML = `
+                    <div class="node-icon">${data.icon}</div>
+                    <div class="node-title">${data.title}</div>
+                    ${data.subtitle ? `<div class="node-subtitle">${data.subtitle}</div>` : ''}
+                `;
+            } else {
+                node.innerHTML = `
+                    <div class="node-title">${data.title}</div>
+                    ${data.subtitle ? `<div class="node-subtitle">${data.subtitle}</div>` : ''}
+                `;
+            }
+            
+            // Add hover effect
+            node.addEventListener('mouseenter', (e) => {
+                if (data.subtitle || data.type === 'conditional') {
+                    const tooltip = document.getElementById('tooltip');
+                    tooltip.textContent = data.type === 'conditional' ? 
+                        `This task only runs ${data.subtitle}` : 
+                        data.subtitle || data.title;
+                    tooltip.style.left = e.pageX + 10 + 'px';
+                    tooltip.style.top = e.pageY - 30 + 'px';
+                    tooltip.classList.add('visible');
+                }
+                
+                // Highlight connected paths
+                highlightPaths(data.id);
+            });
+            
+            node.addEventListener('mouseleave', () => {
+                const tooltip = document.getElementById('tooltip');
+                tooltip.classList.remove('visible');
+                
+                // Remove path highlights
+                clearHighlights();
+            });
+            
+            // Make draggable
+            makeDraggable(node);
+            
+            return node;
+        }
+
+        function drawConnections() {
+            const svg = document.getElementById('connectionsSvg');
+            svg.innerHTML = svg.innerHTML.substring(0, svg.innerHTML.indexOf('</defs>') + 7);
+            
+            Object.values(flowchartData).forEach(nodeData => {
+                if (nodeData.connects) {
+                    nodeData.connects.forEach(targetId => {
+                        drawConnection(nodeData.id, targetId, nodeData.conditional);
+                    });
+                }
+            });
+        }
+
+        function drawConnection(fromId, toId, isConditional = false) {
+            const svg = document.getElementById('connectionsSvg');
+            const fromNode = document.getElementById(fromId);
+            const toNode = document.getElementById(toId);
+            
+            if (!fromNode || !toNode) return;
+            
+            const fromRect = fromNode.getBoundingClientRect();
+            const toRect = toNode.getBoundingClientRect();
+            const containerRect = document.getElementById('flowchart').getBoundingClientRect();
+            
+            const fromX = fromRect.left + fromRect.width / 2 - containerRect.left;
+            const fromY = fromRect.top + fromRect.height / 2 - containerRect.top;
+            const toX = toRect.left + toRect.width / 2 - containerRect.left;
+            const toY = toRect.top + toRect.height / 2 - containerRect.top;
+            
+            const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+            
+            // Create curved path
+            const midX = (fromX + toX) / 2;
+            const midY = (fromY + toY) / 2;
+            const curveOffset = Math.abs(fromX - toX) * 0.2;
+            
+            const d = `M ${toX} ${toY} Q ${midX + curveOffset} ${midY} ${fromX} ${fromY}`;
+            
+            path.setAttribute('d', d);
+            path.setAttribute('class', `flow-line ${isConditional ? 'conditional' : ''}`);
+            path.setAttribute('data-from', fromId);
+            path.setAttribute('data-to', toId);
+            path.setAttribute('marker-end', isConditional ? 'url(#arrowhead-conditional)' : 'url(#arrowhead)');
+            
+            svg.appendChild(path);
+            connections.push(path);
+        }
+
+        function highlightPaths(nodeId) {
+            const paths = document.querySelectorAll('.flow-line');
+            paths.forEach(path => {
+                if (path.dataset.from === nodeId || path.dataset.to === nodeId) {
+                    path.classList.add('active');
+                    path.setAttribute('marker-end', 'url(#arrowhead-active)');
+                }
+            });
+        }
+
+        function clearHighlights() {
+            const paths = document.querySelectorAll('.flow-line');
+            paths.forEach(path => {
+                path.classList.remove('active');
+                const isConditional = path.classList.contains('conditional');
+                path.setAttribute('marker-end', isConditional ? 'url(#arrowhead-conditional)' : 'url(#arrowhead)');
+            });
+        }
+
+        function makeDraggable(element) {
+            let pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
+            element.onmousedown = dragMouseDown;
+
+            function dragMouseDown(e) {
+                e = e || window.event;
+                e.preventDefault();
+                pos3 = e.clientX;
+                pos4 = e.clientY;
+                document.onmouseup = closeDragElement;
+                document.onmousemove = elementDrag;
+            }
+
+            function elementDrag(e) {
+                e = e || window.event;
+                e.preventDefault();
+                pos1 = pos3 - e.clientX;
+                pos2 = pos4 - e.clientY;
+                pos3 = e.clientX;
+                pos4 = e.clientY;
+                element.style.top = (element.offsetTop - pos2) + "px";
+                element.style.left = (element.offsetLeft - pos1) + "px";
+                
+                // Redraw connections
+                drawConnections();
+            }
+
+            function closeDragElement() {
+                document.onmouseup = null;
+                document.onmousemove = null;
+            }
+        }
+
+        function zoomIn() {
+            scale *= 1.2;
+            applyZoom();
+        }
+
+        function zoomOut() {
+            scale /= 1.2;
+            applyZoom();
+        }
+
+        function resetView() {
+            scale = 1;
+            applyZoom();
+            centerView();
+        }
+
+        function applyZoom() {
+            const flowchart = document.getElementById('flowchart');
+            flowchart.style.transform = `scale(${scale})`;
+            flowchart.style.transformOrigin = 'center center';
+        }
+
+        function centerView() {
+            const container = document.getElementById('canvasContainer');
+            const startNode = document.getElementById('start');
+            if (startNode) {
+                container.scrollLeft = startNode.offsetLeft - container.clientWidth / 2 + 100;
+                container.scrollTop = startNode.offsetTop - container.clientHeight / 2;
+            }
+        }
+
+        function toggleConnections() {
+            showConnections = !showConnections;
+            const svg = document.getElementById('connectionsSvg');
+            svg.style.display = showConnections ? 'block' : 'none';
+        }
+
+        function toggleAnimation() {
+            animationsEnabled = !animationsEnabled;
+            const lines = document.querySelectorAll('.flow-line');
+            lines.forEach(line => {
+                if (animationsEnabled) {
+                    line.style.animation = 'dash 20s linear infinite';
+                } else {
+                    line.style.animation = 'none';
+                }
+            });
+            event.target.classList.toggle('active');
+        }
+
+        // Initialize on load
+        window.addEventListener('load', () => {
+            initializeFlowchart();
+            
+            // Add pulse animation to start node
+            document.getElementById('start').classList.add('pulse');
+        });
+
+        // Handle window resize
+        window.addEventListener('resize', () => {
+            drawConnections();
+        });
+    </script>
+</body>
+</html>
