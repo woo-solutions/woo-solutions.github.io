@@ -4,6 +4,24 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Goode Faith Engineering - Property Analysis Platform</title>
+    
+    <!-- Favicon using data URI -->
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E🏗️%3C/text%3E%3C/svg%3E">
+    
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://woo-solutions.github.io/demos/gfe_feasibility/">
+    <meta property="og:title" content="Goode Faith Engineering - Property Analysis Platform">
+    <meta property="og:description" content="Comprehensive property due diligence analysis for commercial development. Get instant risk assessment, engineering feasibility, and project cost estimates.">
+    <meta property="og:image" content="https://goodefaith.com/wp-content/uploads/2022/07/GF-Header-White.png">
+
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image">
+    <meta property="twitter:url" content="https://woo-solutions.github.io/demos/gfe_feasibility/">
+    <meta property="twitter:title" content="Goode Faith Engineering - Property Analysis Platform">
+    <meta property="twitter:description" content="Comprehensive property due diligence analysis for commercial development. Get instant risk assessment, engineering feasibility, and project cost estimates.">
+    <meta property="twitter:image" content="https://goodefaith.com/wp-content/uploads/2022/07/GF-Header-White.png">
+
     <style>
         * {
             margin: 0;
@@ -534,6 +552,8 @@
             display: flex;
             align-items: center;
             flex-wrap: nowrap;
+            justify-content: center;
+            gap: 20px;
         }
 
         .fee-hours {
@@ -547,7 +567,7 @@
             color: #ff6b6b;
             font-weight: 600;
             font-size: 1em;
-            min-width: 80px;
+            width: 80px;
             text-align: left;
         }
 
@@ -561,7 +581,6 @@
             cursor: pointer;
             transition: all 0.2s ease;
             white-space: nowrap;
-            margin-left: auto;
         }
 
         .btn-explain:hover {
@@ -677,17 +696,23 @@
             border-radius: 4px;
             color: white;
             font-size: 0.8em;
+            flex-shrink: 0;
         }
 
         .attachment-name {
             color: #ff6b6b;
             font-size: 0.9em;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            flex: 1;
+            min-width: 0;
         }
 
         .attachment-size {
             color: #6b7280;
             font-size: 0.8em;
-            margin-left: auto;
+            flex-shrink: 0;
         }
 
         .email-actions {
@@ -697,6 +722,66 @@
             gap: 10px;
             justify-content: flex-end;
             flex-wrap: wrap;
+        }
+
+        /* Success Animation */
+        .success-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.7);
+            z-index: 3000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .success-overlay.active {
+            display: flex;
+        }
+
+        .success-popup {
+            background: #2a2a2a;
+            border: 2px solid #10B981;
+            border-radius: 12px;
+            padding: 30px;
+            text-align: center;
+            animation: successBounce 0.6s ease-out;
+        }
+
+        .success-icon {
+            width: 60px;
+            height: 60px;
+            background: #10B981;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 15px;
+            font-size: 2em;
+            color: white;
+            animation: checkmarkPop 0.4s 0.2s ease-out forwards;
+            transform: scale(0);
+        }
+
+        .success-text {
+            color: #ffffff;
+            font-size: 1.1em;
+            font-weight: 500;
+        }
+
+        @keyframes successBounce {
+            0% { transform: scale(0.3); opacity: 0; }
+            50% { transform: scale(1.05); }
+            70% { transform: scale(0.9); }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        @keyframes checkmarkPop {
+            0% { transform: scale(0); }
+            100% { transform: scale(1); }
         }
 
         /* Modal */
@@ -973,6 +1058,10 @@
 
             .task-grid {
                 grid-template-columns: 1fr;
+            }
+
+            .fee-service-meta {
+                justify-content: flex-start;
             }
         }
 
@@ -1460,7 +1549,7 @@ www.goodefaith.com
                         <div class="attachment-section" id="attachmentSection">
                             <div class="attachment-item" onclick="showAttachmentPreview()">
                                 <div class="attachment-icon">📄</div>
-                                <span class="attachment-name">Property_Analysis_Report_12345_Hwy183.pdf</span>
+                                <span class="attachment-name" id="attachmentName">Property_Analysis_Report_12345_Hwy183.pdf</span>
                                 <span class="attachment-size">2.4 MB</span>
                             </div>
                         </div>
@@ -1469,7 +1558,7 @@ www.goodefaith.com
                     <div class="email-actions">
                         <button class="btn btn-secondary">Save Draft</button>
                         <button class="btn btn-secondary" onclick="attachReport()">Attach Report</button>
-                        <button class="btn btn-primary">Send to Client</button>
+                        <button class="btn btn-primary" onclick="sendEmail()">Send to Client</button>
                     </div>
                 </div>
             </div>
@@ -1480,6 +1569,14 @@ www.goodefaith.com
     <div class="bottom-nav">
         <button class="nav-btn" id="prevBtn" onclick="prevScreen()" disabled>← Previous</button>
         <button class="nav-btn" id="nextBtn" onclick="nextScreen()">Next →</button>
+    </div>
+
+    <!-- Success Animation Overlay -->
+    <div class="success-overlay" id="successOverlay">
+        <div class="success-popup">
+            <div class="success-icon">✓</div>
+            <div class="success-text">Email sent successfully!</div>
+        </div>
     </div>
 
     <!-- All Detail Modals -->
@@ -1837,6 +1934,20 @@ www.goodefaith.com
             }
         };
 
+        // ESC key functionality
+        document.addEventListener('keydown', function(event) {
+            if (event.key === 'Escape') {
+                closeAllModals();
+            }
+        });
+
+        function closeAllModals() {
+            document.querySelectorAll('.modal').forEach(modal => {
+                modal.classList.remove('active');
+            });
+            document.getElementById('successOverlay').classList.remove('active');
+        }
+
         function toggleInputMethod(method) {
             inputMethod = method;
             const buttons = document.querySelectorAll('.toggle-btn');
@@ -1913,6 +2024,20 @@ www.goodefaith.com
             });
         }
 
+        // Filename truncation function
+        function truncateFilename(filename, maxLength = 35) {
+            if (filename.length <= maxLength) return filename;
+            
+            const extension = filename.split('.').pop();
+            const nameWithoutExt = filename.substring(0, filename.lastIndexOf('.'));
+            const truncateLength = maxLength - extension.length - 7; // 7 for "(...)" + "."
+            
+            if (truncateLength > 0) {
+                return nameWithoutExt.substring(0, truncateLength) + '(...).' + extension;
+            }
+            return '(...).' + extension;
+        }
+
         function showScreen(screenNumber) {
             document.querySelectorAll('.screen').forEach(screen => {
                 screen.classList.remove('active');
@@ -1952,6 +2077,16 @@ www.goodefaith.com
                 currentScreen--;
                 showScreen(currentScreen);
             }
+        }
+
+        // Send email with success animation
+        function sendEmail() {
+            const overlay = document.getElementById('successOverlay');
+            overlay.classList.add('active');
+            
+            setTimeout(() => {
+                overlay.classList.remove('active');
+            }, 2000);
         }
 
         // Modal functions for each section
@@ -2029,6 +2164,12 @@ www.goodefaith.com
         // Attachment functions
         function attachReport() {
             const attachmentSection = document.getElementById('attachmentSection');
+            const attachmentName = document.getElementById('attachmentName');
+            
+            // Truncate filename if needed
+            const originalName = 'Property_Analysis_Report_12345_Hwy183.pdf';
+            attachmentName.textContent = truncateFilename(originalName);
+            
             attachmentSection.classList.add('active');
         }
 
@@ -2042,6 +2183,12 @@ www.goodefaith.com
 
         window.addEventListener('load', () => {
             initializeTasks();
+            
+            // Truncate filename on page load if attachment is visible
+            const attachmentName = document.getElementById('attachmentName');
+            if (attachmentName) {
+                attachmentName.textContent = truncateFilename(attachmentName.textContent);
+            }
             
             document.querySelectorAll('.nav-dot').forEach(dot => {
                 dot.addEventListener('click', (e) => {
@@ -2103,6 +2250,12 @@ www.goodefaith.com
         document.getElementById('attachmentModal').addEventListener('click', (e) => {
             if (e.target.id === 'attachmentModal') {
                 closeAttachmentModal();
+            }
+        });
+
+        document.getElementById('successOverlay').addEventListener('click', (e) => {
+            if (e.target.id === 'successOverlay') {
+                document.getElementById('successOverlay').classList.remove('active');
             }
         });
     </script>
